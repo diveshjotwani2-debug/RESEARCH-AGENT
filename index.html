@@ -446,7 +446,7 @@
       <span class="logo">NOVA</span>
       <span class="model-tag">claude-sonnet-4 · research agent</span>
     </div>
-    <button class="clear-btn" onclick="clearChat()">clear history</button>
+    <div style="display:flex;align-items:center;gap:8px"><input id="api-key-input" type="password" placeholder="sk-ant-... paste API key here" style="background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.14);border-radius:8px;color:#e8e6e0;font-family:JetBrains Mono,monospace;font-size:11px;padding:6px 10px;width:220px;outline:none;" /><button class="clear-btn" onclick="clearChat()">clear</button></div>
   </div>
 
   <!-- Messages -->
@@ -696,9 +696,22 @@ async function sendMessage() {
   showTyping();
 
   try {
+    const apiKey = document.getElementById('api-key-input')?.value?.trim() || '';
+    if (!apiKey) {
+      appendError('Please enter your Anthropic API key in the box at the top.');
+      isRunning = false;
+      document.getElementById('send-btn').disabled = false;
+      return;
+    }
+
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true',
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
